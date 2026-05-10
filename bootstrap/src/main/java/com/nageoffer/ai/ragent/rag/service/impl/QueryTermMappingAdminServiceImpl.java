@@ -41,6 +41,9 @@ public class QueryTermMappingAdminServiceImpl implements QueryTermMappingAdminSe
     private final QueryTermMappingMapper queryTermMappingMapper;
     private final QueryTermMappingCacheManager queryTermMappingCacheManager;
 
+    /**
+     * 创建查询词映射规则，并清理相关缓存。
+     */
     @Override
     public String create(QueryTermMappingCreateRequest requestParam) {
         Assert.notNull(requestParam, () -> new ClientException("请求不能为空"));
@@ -62,6 +65,9 @@ public class QueryTermMappingAdminServiceImpl implements QueryTermMappingAdminSe
         return String.valueOf(record.getId());
     }
 
+    /**
+     * 更新查询词映射规则，并刷新缓存内容。
+     */
     @Override
     public void update(String id, QueryTermMappingUpdateRequest requestParam) {
         Assert.notNull(requestParam, () -> new ClientException("请求不能为空"));
@@ -94,6 +100,9 @@ public class QueryTermMappingAdminServiceImpl implements QueryTermMappingAdminSe
         queryTermMappingCacheManager.clearCache();
     }
 
+    /**
+     * 删除指定映射规则，并清理缓存。
+     */
     @Override
     public void delete(String id) {
         QueryTermMappingDO record = loadById(id);
@@ -101,12 +110,18 @@ public class QueryTermMappingAdminServiceImpl implements QueryTermMappingAdminSe
         queryTermMappingCacheManager.clearCache();
     }
 
+    /**
+     * 根据主键查询单条映射规则详情。
+     */
     @Override
     public QueryTermMappingVO queryById(String id) {
         QueryTermMappingDO record = loadById(id);
         return toVO(record);
     }
 
+    /**
+     * 按条件分页查询映射规则列表。
+     */
     @Override
     public IPage<QueryTermMappingVO> pageQuery(QueryTermMappingPageRequest requestParam) {
         String keyword = StrUtil.trimToNull(requestParam.getKeyword());
@@ -124,12 +139,18 @@ public class QueryTermMappingAdminServiceImpl implements QueryTermMappingAdminSe
         return result.convert(this::toVO);
     }
 
+    /**
+     * 按 ID 加载映射规则，不存在时抛出异常。
+     */
     private QueryTermMappingDO loadById(String id) {
         QueryTermMappingDO record = queryTermMappingMapper.selectById(id);
         Assert.notNull(record, () -> new ClientException("映射规则不存在"));
         return record;
     }
 
+    /**
+     * 将映射规则实体转换为前端展示对象。
+     */
     private QueryTermMappingVO toVO(QueryTermMappingDO record) {
         return QueryTermMappingVO.builder()
                 .id(String.valueOf(record.getId()))

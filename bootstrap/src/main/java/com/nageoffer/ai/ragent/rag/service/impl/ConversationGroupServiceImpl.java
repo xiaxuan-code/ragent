@@ -39,6 +39,9 @@ public class ConversationGroupServiceImpl implements ConversationGroupService {
     private final ConversationSummaryMapper summaryMapper;
     private final ConversationMapper conversationMapper;
 
+    /**
+     * 查询指定会话下最近的用户消息，供记忆和摘要流程使用。
+     */
     @Override
     public List<ConversationMessageDO> listLatestUserOnlyMessages(String conversationId, String userId, int limit) {
         if (StrUtil.isBlank(conversationId) || StrUtil.isBlank(userId) || limit <= 0) {
@@ -55,6 +58,9 @@ public class ConversationGroupServiceImpl implements ConversationGroupService {
         );
     }
 
+    /**
+     * 查询两个消息 ID 边界之间的用户和助手消息。
+     */
     @Override
     public List<ConversationMessageDO> listMessagesBetweenIds(String conversationId, String userId, String afterId, String beforeId) {
         if (StrUtil.isBlank(conversationId) || StrUtil.isBlank(userId)) {
@@ -76,6 +82,9 @@ public class ConversationGroupServiceImpl implements ConversationGroupService {
         );
     }
 
+    /**
+     * 查询指定时间点之前最近的一条消息 ID。
+     */
     @Override
     public String findMaxMessageIdAtOrBefore(String conversationId, String userId, java.util.Date at) {
         if (StrUtil.isBlank(conversationId) || StrUtil.isBlank(userId) || at == null) {
@@ -93,6 +102,9 @@ public class ConversationGroupServiceImpl implements ConversationGroupService {
         return record == null ? null : record.getId();
     }
 
+    /**
+     * 统计指定会话中的用户消息数量。
+     */
     @Override
     public long countUserMessages(String conversationId, String userId) {
         if (StrUtil.isBlank(conversationId) || StrUtil.isBlank(userId)) {
@@ -107,6 +119,9 @@ public class ConversationGroupServiceImpl implements ConversationGroupService {
         );
     }
 
+    /**
+     * 查询指定会话最新的一条摘要记录。
+     */
     @Override
     public ConversationSummaryDO findLatestSummary(String conversationId, String userId) {
         if (StrUtil.isBlank(conversationId) || StrUtil.isBlank(userId)) {
@@ -122,6 +137,9 @@ public class ConversationGroupServiceImpl implements ConversationGroupService {
         );
     }
 
+    /**
+     * 查询指定用户拥有的会话基础信息。
+     */
     @Override
     public ConversationDO findConversation(String conversationId, String userId) {
         if (StrUtil.isBlank(conversationId) || StrUtil.isBlank(userId)) {

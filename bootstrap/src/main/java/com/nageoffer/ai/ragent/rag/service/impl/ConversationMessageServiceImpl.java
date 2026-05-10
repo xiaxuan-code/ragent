@@ -49,6 +49,9 @@ public class ConversationMessageServiceImpl implements ConversationMessageServic
     private final ConversationMapper conversationMapper;
     private final MessageFeedbackService feedbackService;
 
+    /**
+     * 保存一条会话消息并返回消息 ID。
+     */
     @Override
     public String addMessage(ConversationMessageBO conversationMessage) {
         ConversationMessageDO messageDO = BeanUtil.toBean(conversationMessage, ConversationMessageDO.class);
@@ -56,6 +59,9 @@ public class ConversationMessageServiceImpl implements ConversationMessageServic
         return messageDO.getId();
     }
 
+    /**
+     * 查询会话消息列表，并补充当前用户的反馈投票结果。
+     */
     @Override
     public List<ConversationMessageVO> listMessages(String conversationId, String userId, Integer limit, ConversationMessageOrder order) {
         if (StrUtil.isBlank(conversationId) || StrUtil.isBlank(userId)) {
@@ -113,6 +119,9 @@ public class ConversationMessageServiceImpl implements ConversationMessageServic
         return result;
     }
 
+    /**
+     * 保存一条会话摘要记录。
+     */
     @Override
     public void addMessageSummary(ConversationSummaryBO conversationSummary) {
         ConversationSummaryDO conversationSummaryDO = BeanUtil.toBean(conversationSummary, ConversationSummaryDO.class);

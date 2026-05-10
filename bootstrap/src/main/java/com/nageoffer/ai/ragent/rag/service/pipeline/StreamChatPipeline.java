@@ -78,10 +78,11 @@ public class StreamChatPipeline {
         loadMemory(ctx);
         rewriteQuery(ctx);
         resolveIntents(ctx);
-
+        //歧义澄清
         if (handleGuidance(ctx)) {
             return;
         }
+        //系统直达
         if (handleSystemOnly(ctx)) {
             return;
         }
@@ -96,6 +97,9 @@ public class StreamChatPipeline {
 
     // ==================== 流水线阶段 ====================
 
+    /**
+     * 加载历史对话，并把当前用户问题追加到上下文中。
+     */
     private void loadMemory(StreamChatContext ctx) {
         List<ChatMessage> history = memoryService.loadAndAppend(
                 ctx.getConversationId(),
@@ -105,16 +109,25 @@ public class StreamChatPipeline {
         ctx.setHistory(history);
     }
 
+    /**
+     * 在意图识别前，对当前问题执行改写和拆分。
+     */
     private void rewriteQuery(StreamChatContext ctx) {
         RewriteResult rewriteResult = queryRewriteService.rewriteWithSplit(ctx.getQuestion(), ctx.getHistory());
         ctx.setRewriteResult(rewriteResult);
     }
 
+    /**
+     * 解析改写后问题集合对应的意图信息。
+     */
     private void resolveIntents(StreamChatContext ctx) {
         List<SubQuestionIntent> subIntents = intentResolver.resolve(ctx.getRewriteResult());
         ctx.setSubIntents(subIntents);
     }
 
+    /**
+     * 当问题存在歧义时，直接返回澄清引导内容。
+     */
     private boolean handleGuidance(StreamChatContext ctx) {
         GuidanceDecision decision = guidanceService.detectAmbiguity(
                 ctx.getRewriteResult().rewrittenQuestion(),
@@ -129,6 +142,9 @@ public class StreamChatPipeline {
         return true;
     }
 
+    /**
+     * 当全部意图都属于系统直答场景时，走系统提示词直答分支。
+     */
     private boolean handleSystemOnly(StreamChatContext ctx) {
         List<SubQuestionIntent> subIntents = ctx.getSubIntents();
         boolean allSystemOnly = subIntents.stream()
@@ -152,10 +168,16 @@ public class StreamChatPipeline {
         return true;
     }
 
+    /**
+     * 根据子问题意图执行检索流程。
+     */
     private RetrievalContext retrieve(StreamChatContext ctx) {
         return retrievalEngine.retrieve(ctx.getSubIntents(), DEFAULT_TOP_K);
     }
 
+    /**
+     * 当检索结果为空时，返回兜底响应。
+     */
     private boolean handleEmptyRetrieval(StreamChatContext ctx, RetrievalContext retrievalCtx) {
         if (!retrievalCtx.isEmpty()) {
             return false;
@@ -166,6 +188,9 @@ public class StreamChatPipeline {
         return true;
     }
 
+    /**
+     * 在检索和提示词准备完成后，发起最终的 RAG 流式回答。
+     */
     private void streamRagResponse(StreamChatContext ctx, RetrievalContext retrievalCtx) {
         // 聚合所有意图用于 prompt 规划
         IntentGroup mergedGroup = intentResolver.mergeIntentGroup(ctx.getSubIntents());
@@ -183,6 +208,9 @@ public class StreamChatPipeline {
 
     // ==================== LLM 响应 ====================
 
+    /**
+     * 基于系统提示词和历史消息直接流式返回结果。
+     */
     private StreamCancellationHandle streamSystemResponse(String question, List<ChatMessage> history,
                                                           String customPrompt, StreamCallback callback) {
         String systemPrompt = StrUtil.isNotBlank(customPrompt)
@@ -204,6 +232,9 @@ public class StreamChatPipeline {
         return llmService.streamChat(req, callback);
     }
 
+    /**
+     * 构建结构化 RAG 提示词，并流式调用大模型生成回答。
+     */
     private StreamCancellationHandle streamLLMResponse(RewriteResult rewriteResult, RetrievalContext ctx,
                                                        IntentGroup intentGroup, List<ChatMessage> history,
                                                        boolean deepThinking, StreamCallback callback) {

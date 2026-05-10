@@ -27,11 +27,23 @@ import java.util.Date;
  */
 public interface RagTraceRecordService {
 
+    /**
+     * 记录一条 Trace 运行开始信息。
+     */
     void startRun(RagTraceRunDO run);
 
+    /**
+     * 更新 Trace 运行结束状态和耗时信息。
+     */
     void finishRun(String traceId, String status, String errorMessage, Date endTime, long durationMs);
 
+    /**
+     * 记录一条 Trace 节点开始信息。
+     */
     void startNode(RagTraceNodeDO node);
 
+    /**
+     * 更新 Trace 节点结束状态和耗时信息。
+     */
     void finishNode(String traceId, String nodeId, String status, String errorMessage, Date endTime, long durationMs);
 }

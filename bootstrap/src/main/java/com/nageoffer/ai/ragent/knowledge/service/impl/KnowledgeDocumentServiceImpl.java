@@ -487,7 +487,7 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
             if (newScheduleEnabled != null) {
                 updateWrapper.set(KnowledgeDocumentDO::getScheduleEnabled, newScheduleEnabled);
                 scheduleChanged = true;
-            }
+        }
             if (StringUtils.hasText(newScheduleCron)) {
                 try {
                     CronScheduleHelper.nextRunTime(newScheduleCron, new Date());

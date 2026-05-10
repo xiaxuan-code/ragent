@@ -123,6 +123,9 @@ public class StreamChatEventHandler implements StreamCallback {
         return new CompletionPayload(String.valueOf(messageId), title);
     }
 
+    /**
+     * 处理模型返回的普通回答片段。
+     */
     @Override
     public void onContent(String chunk) {
         if (taskManager.isCancelled(taskId)) {
@@ -138,6 +141,9 @@ public class StreamChatEventHandler implements StreamCallback {
         sendChunked(TYPE_RESPONSE, chunk);
     }
 
+    /**
+     * 处理支持思考输出的模型返回的推理片段。
+     */
     @Override
     public void onThinking(String chunk) {
         if (taskManager.isCancelled(taskId)) {
@@ -153,6 +159,9 @@ public class StreamChatEventHandler implements StreamCallback {
         sendChunked(TYPE_THINK, chunk);
     }
 
+    /**
+     * 持久化最终回答消息，并关闭 SSE 输出。
+     */
     @Override
     public void onComplete() {
         if (taskManager.isCancelled(taskId)) {
@@ -174,6 +183,9 @@ public class StreamChatEventHandler implements StreamCallback {
         sender.complete();
     }
 
+    /**
+     * 处理流式异常，并将错误透传给 SSE 发送器。
+     */
     @Override
     public void onError(Throwable t) {
         if (taskManager.isCancelled(taskId)) {
@@ -183,6 +195,9 @@ public class StreamChatEventHandler implements StreamCallback {
         sender.fail(t);
     }
 
+    /**
+     * 按配置的分片大小拆分文本后发送 SSE 消息。
+     */
     private void sendChunked(String type, String content) {
         int length = content.length();
         int idx = 0;
@@ -204,10 +219,16 @@ public class StreamChatEventHandler implements StreamCallback {
         }
     }
 
+    /**
+     * 返回当前已统计到的思考耗时。
+     */
     private Integer resolveThinkingDuration() {
         return thinkingDurationSeconds > 0 ? thinkingDurationSeconds : null;
     }
 
+    /**
+     * 解析完成事件中需要返回的会话标题。
+     */
     private String resolveTitleForEvent() {
         if (!sendTitleOnComplete) {
             return null;

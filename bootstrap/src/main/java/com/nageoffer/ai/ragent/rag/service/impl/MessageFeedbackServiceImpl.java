@@ -52,6 +52,9 @@ public class MessageFeedbackServiceImpl implements MessageFeedbackService {
     @Value("message-feedback_topic${unique-name:}")
     private String feedbackTopic;
 
+    /**
+     * 通过消息队列异步提交消息反馈。
+     */
     @Override
     public void submitFeedbackAsync(String messageId, MessageFeedbackRequest request) {
         String userId = UserContext.getUserId();
@@ -73,6 +76,9 @@ public class MessageFeedbackServiceImpl implements MessageFeedbackService {
         messageQueueProducer.send(feedbackTopic, userId + ":" + messageId, "消息反馈", event);
     }
 
+    /**
+     * 在当前请求链路中同步保存消息反馈。
+     */
     @Override
     public void submitFeedback(String messageId, MessageFeedbackRequest request) {
         String userId = UserContext.getUserId();
@@ -89,6 +95,9 @@ public class MessageFeedbackServiceImpl implements MessageFeedbackService {
                 vote, request.getReason(), request.getComment(), System.currentTimeMillis());
     }
 
+    /**
+     * 查询用户对一批消息已经提交过的投票结果。
+     */
     @Override
     public Map<String, Integer> getUserVotes(String userId, List<String> messageIds) {
         if (StrUtil.isBlank(userId) || CollUtil.isEmpty(messageIds)) {
@@ -111,6 +120,9 @@ public class MessageFeedbackServiceImpl implements MessageFeedbackService {
                 ));
     }
 
+    /**
+     * 加载并校验目标消息，确保其属于当前用户且角色为助手。
+     */
     private ConversationMessageDO loadAssistantMessage(String messageId, String userId) {
         ConversationMessageDO message = conversationMessageMapper.selectOne(
                 Wrappers.lambdaQuery(ConversationMessageDO.class)
@@ -123,6 +135,9 @@ public class MessageFeedbackServiceImpl implements MessageFeedbackService {
         return message;
     }
 
+    /**
+     * 新增或更新反馈记录，并按提交时间避免旧数据覆盖新数据。
+     */
     private void doUpsertFeedback(String messageId, String userId, String conversationId,
                                   Integer vote, String reason, String comment, long submitTime) {
         MessageFeedbackDO existing = feedbackMapper.selectOne(
@@ -157,6 +172,9 @@ public class MessageFeedbackServiceImpl implements MessageFeedbackService {
         }
     }
 
+    /**
+     * 消费 MQ 中的反馈事件并执行幂等落库。
+     */
     @Override
     public void submitFeedbackByEvent(MessageFeedbackEvent event) {
         String messageId = event.getMessageId();

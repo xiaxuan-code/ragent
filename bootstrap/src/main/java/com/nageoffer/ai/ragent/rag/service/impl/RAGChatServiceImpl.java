@@ -45,6 +45,9 @@ public class RAGChatServiceImpl implements RAGChatService {
     private final StreamCallbackFactory callbackFactory;
     private final StreamTaskManager taskManager;
 
+    /**
+     * 发起流式问答请求，并将具体流程交给对话管道处理。
+     */
     @Override
     @ChatRateLimit
     public void streamChat(String question, String conversationId, Boolean deepThinking, SseEmitter emitter) {
@@ -74,6 +77,9 @@ public class RAGChatServiceImpl implements RAGChatService {
         }
     }
 
+    /**
+     * 根据任务 ID 取消正在执行的流式问答任务。
+     */
     @Override
     public void stopTask(String taskId) {
         taskManager.cancel(taskId);

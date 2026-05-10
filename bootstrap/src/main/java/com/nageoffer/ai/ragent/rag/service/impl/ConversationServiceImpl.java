@@ -63,6 +63,9 @@ public class ConversationServiceImpl implements ConversationService {
     private final PromptTemplateLoader promptTemplateLoader;
     private final LLMService llmService;
 
+    /**
+     * 查询指定用户的全部有效会话列表。
+     */
     @Override
     public List<ConversationVO> listByUserId(String userId) {
         if (StrUtil.isBlank(userId)) {
@@ -88,6 +91,9 @@ public class ConversationServiceImpl implements ConversationService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 会话不存在时创建新会话，存在时仅刷新最近活跃时间。
+     */
     @Override
     public void createOrUpdate(ConversationCreateBO request) {
         String userId = request.getUserId();
@@ -120,6 +126,9 @@ public class ConversationServiceImpl implements ConversationService {
         conversationMapper.updateById(existing);
     }
 
+    /**
+     * 校验归属和标题长度后，更新指定会话名称。
+     */
     @Override
     public void rename(String conversationId, ConversationUpdateRequest request) {
         String userId = UserContext.getUserId();
@@ -150,6 +159,9 @@ public class ConversationServiceImpl implements ConversationService {
         conversationMapper.updateById(record);
     }
 
+    /**
+     * 删除会话以及其关联的消息和摘要数据。
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(String conversationId) {
@@ -183,6 +195,9 @@ public class ConversationServiceImpl implements ConversationService {
         );
     }
 
+    /**
+     * 根据用户问题生成简短的会话标题。
+     */
     private String generateTitleFromQuestion(String question) {
         int maxLen = memoryProperties.getTitleMaxLength();
         if (maxLen <= 0) {

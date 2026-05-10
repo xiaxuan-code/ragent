@@ -57,6 +57,9 @@ public class StreamTaskManager {
         this.redissonClient = redissonClient;
     }
 
+    /**
+     * 在 Bean 初始化时订阅分布式取消主题。
+     */
     @PostConstruct
     public void subscribe() {
         RTopic topic = redissonClient.getTopic(CANCEL_TOPIC);
@@ -68,6 +71,9 @@ public class StreamTaskManager {
         });
     }
 
+    /**
+     * 在 Bean 销毁前移除取消主题监听器。
+     */
     @PreDestroy
     public void unsubscribe() {
         if (listenerId == -1) {
@@ -76,6 +82,9 @@ public class StreamTaskManager {
         redissonClient.getTopic(CANCEL_TOPIC).removeListener(listenerId);
     }
 
+    /**
+     * 注册流式任务的发送器状态，并在任务已取消时补发取消结果。
+     */
     public void register(String taskId, SseEmitterSender sender, Supplier<CompletionPayload> onCancelSupplier) {
         StreamTaskInfo taskInfo = getOrCreate(taskId);
         taskInfo.sender = sender;
@@ -87,6 +96,9 @@ public class StreamTaskManager {
         }
     }
 
+    /**
+     * 为任务绑定下游取消句柄。
+     */
     public void bindHandle(String taskId, StreamCancellationHandle handle) {
         StreamTaskInfo taskInfo = getOrCreate(taskId);
         taskInfo.handle = handle;
@@ -95,11 +107,17 @@ public class StreamTaskManager {
         }
     }
 
+    /**
+     * 判断指定任务在当前节点是否已经被取消。
+     */
     public boolean isCancelled(String taskId) {
         StreamTaskInfo info = tasks.getIfPresent(taskId);
         return info != null && info.cancelled.get();
     }
 
+    /**
+     * 发布分布式取消信号，通知各节点终止任务。
+     */
     public void cancel(String taskId) {
         // 先设置 Redis 标记，再发布消息
         RBucket<Boolean> bucket = redissonClient.getBucket(cancelKey(taskId));
@@ -128,6 +146,9 @@ public class StreamTaskManager {
         return false;
     }
 
+    /**
+     * 在当前节点执行任务取消并结束对应 SSE 输出。
+     */
     private void cancelLocal(String taskId) {
         StreamTaskInfo taskInfo = tasks.getIfPresent(taskId);
         if (taskInfo == null) {
@@ -151,6 +172,9 @@ public class StreamTaskManager {
         }
     }
 
+    /**
+     * 在任务结束后清理本地缓存和 Redis 中的任务状态。
+     */
     public void unregister(String taskId) {
         // 清理本地缓存
         tasks.invalidate(taskId);
@@ -159,16 +183,25 @@ public class StreamTaskManager {
         redissonClient.getBucket(cancelKey(taskId)).deleteAsync();
     }
 
+    /**
+     * 生成任务取消标记在 Redis 中使用的键名。
+     */
     private String cancelKey(String taskId) {
         return CANCEL_KEY_PREFIX + taskId;
     }
 
+    /**
+     * 向当前 SSE 发送器发送取消和结束事件。
+     */
     private void sendCancelAndDone(SseEmitterSender sender, CompletionPayload payload) {
         CompletionPayload actualPayload = payload == null ? new CompletionPayload(null, null) : payload;
         sender.sendEvent(SSEEventType.CANCEL.value(), actualPayload);
         sender.sendEvent(SSEEventType.DONE.value(), "[DONE]");
     }
 
+    /**
+     * 从缓存获取任务信息，不存在时创建新的任务状态对象。
+     */
     @SneakyThrows
     private StreamTaskInfo getOrCreate(String taskId) {
         return tasks.get(taskId, StreamTaskInfo::new);

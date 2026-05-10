@@ -57,7 +57,13 @@ public interface FileStorageService {
      */
     StoredFileDTO reliableUpload(String bucketName, InputStream content, long size, String originalFilename, String contentType);
 
+    /**
+     * 根据文件地址打开输入流。
+     */
     InputStream openStream(String url);
 
+    /**
+     * 根据文件地址删除已存储文件。
+     */
     void deleteByUrl(String url);
 }

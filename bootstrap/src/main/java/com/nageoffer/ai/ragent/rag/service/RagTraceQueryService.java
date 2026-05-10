@@ -30,9 +30,18 @@ import java.util.List;
  */
 public interface RagTraceQueryService {
 
+    /**
+     * 按查询条件分页获取 Trace 运行记录。
+     */
     IPage<RagTraceRunVO> pageRuns(RagTraceRunPageRequest request);
 
+    /**
+     * 查询指定 Trace 的运行详情和节点明细。
+     */
     RagTraceDetailVO detail(String traceId);
 
+    /**
+     * 获取指定 Trace 下的全部节点信息。
+     */
     List<RagTraceNodeVO> listNodes(String traceId);
 }

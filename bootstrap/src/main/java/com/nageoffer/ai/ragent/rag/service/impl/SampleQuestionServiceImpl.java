@@ -43,6 +43,9 @@ public class SampleQuestionServiceImpl implements SampleQuestionService {
 
     private final SampleQuestionMapper sampleQuestionMapper;
 
+    /**
+     * 创建一条示例问题记录并返回其主键。
+     */
     @Override
     public String create(SampleQuestionCreateRequest requestParam) {
         Assert.notNull(requestParam, () -> new ClientException("请求不能为空"));
@@ -58,6 +61,9 @@ public class SampleQuestionServiceImpl implements SampleQuestionService {
         return String.valueOf(record.getId());
     }
 
+    /**
+     * 更新指定示例问题的可编辑字段。
+     */
     @Override
     public void update(String id, SampleQuestionUpdateRequest requestParam) {
         Assert.notNull(requestParam, () -> new ClientException("请求不能为空"));
@@ -78,18 +84,27 @@ public class SampleQuestionServiceImpl implements SampleQuestionService {
         sampleQuestionMapper.updateById(record);
     }
 
+    /**
+     * 删除指定示例问题记录。
+     */
     @Override
     public void delete(String id) {
         SampleQuestionDO record = loadById(id);
         sampleQuestionMapper.deleteById(record.getId());
     }
 
+    /**
+     * 根据 ID 查询示例问题详情。
+     */
     @Override
     public SampleQuestionVO queryById(String id) {
         SampleQuestionDO record = loadById(id);
         return toVO(record);
     }
 
+    /**
+     * 按关键字分页查询示例问题列表。
+     */
     @Override
     public IPage<SampleQuestionVO> pageQuery(SampleQuestionPageRequest requestParam) {
         String keyword = StrUtil.trimToNull(requestParam.getKeyword());
@@ -109,6 +124,9 @@ public class SampleQuestionServiceImpl implements SampleQuestionService {
         return result.convert(this::toVO);
     }
 
+    /**
+     * 随机查询少量示例问题，用于首页或引导场景展示。
+     */
     @Override
     public List<SampleQuestionVO> listRandomQuestions() {
         List<SampleQuestionDO> records = sampleQuestionMapper.selectList(
@@ -124,6 +142,9 @@ public class SampleQuestionServiceImpl implements SampleQuestionService {
                 .toList();
     }
 
+    /**
+     * 按 ID 加载示例问题，不存在时抛出异常。
+     */
     private SampleQuestionDO loadById(String id) {
         SampleQuestionDO record = sampleQuestionMapper.selectOne(
                 Wrappers.lambdaQuery(SampleQuestionDO.class)
@@ -134,6 +155,9 @@ public class SampleQuestionServiceImpl implements SampleQuestionService {
         return record;
     }
 
+    /**
+     * 将示例问题实体转换为展示对象。
+     */
     private SampleQuestionVO toVO(SampleQuestionDO record) {
         return SampleQuestionVO.builder()
                 .id(String.valueOf(record.getId()))

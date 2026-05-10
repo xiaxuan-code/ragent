@@ -38,11 +38,17 @@ public class RagTraceRecordServiceImpl implements RagTraceRecordService {
     private final RagTraceRunMapper runMapper;
     private final RagTraceNodeMapper nodeMapper;
 
+    /**
+     * 新增一条 Trace 运行开始记录。
+     */
     @Override
     public void startRun(RagTraceRunDO run) {
         runMapper.insert(run);
     }
 
+    /**
+     * 更新指定 Trace 运行的结束状态和耗时信息。
+     */
     @Override
     public void finishRun(String traceId, String status, String errorMessage, Date endTime, long durationMs) {
         RagTraceRunDO update = RagTraceRunDO.builder()
@@ -55,11 +61,17 @@ public class RagTraceRecordServiceImpl implements RagTraceRecordService {
                 .eq(RagTraceRunDO::getTraceId, traceId));
     }
 
+    /**
+     * 新增一条 Trace 节点开始记录。
+     */
     @Override
     public void startNode(RagTraceNodeDO node) {
         nodeMapper.insert(node);
     }
 
+    /**
+     * 更新指定 Trace 节点的结束状态和耗时信息。
+     */
     @Override
     public void finishNode(String traceId, String nodeId, String status, String errorMessage, Date endTime, long durationMs) {
         RagTraceNodeDO update = RagTraceNodeDO.builder()

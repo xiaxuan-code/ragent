@@ -53,6 +53,9 @@ public class RagTraceQueryServiceImpl implements RagTraceQueryService {
     private final RagTraceNodeMapper nodeMapper;
     private final UserMapper userMapper;
 
+    /**
+     * 分页查询 Trace 运行记录，并补充用户名信息。
+     */
     @Override
     public IPage<RagTraceRunVO> pageRuns(RagTraceRunPageRequest request) {
         LambdaQueryWrapper<RagTraceRunDO> wrapper = Wrappers.lambdaQuery(RagTraceRunDO.class)
@@ -76,6 +79,9 @@ public class RagTraceQueryServiceImpl implements RagTraceQueryService {
         return pageResult.convert(run -> toRunVO(run, usernameMap));
     }
 
+    /**
+     * 查询指定 Trace 的详情信息及节点列表。
+     */
     @Override
     public RagTraceDetailVO detail(String traceId) {
         RagTraceRunDO run = runMapper.selectOne(Wrappers.lambdaQuery(RagTraceRunDO.class)
@@ -91,6 +97,9 @@ public class RagTraceQueryServiceImpl implements RagTraceQueryService {
                 .build();
     }
 
+    /**
+     * 按执行顺序查询指定 Trace 下的全部节点。
+     */
     @Override
     public List<RagTraceNodeVO> listNodes(String traceId) {
         List<RagTraceNodeDO> nodes = nodeMapper.selectList(Wrappers.lambdaQuery(RagTraceNodeDO.class)
@@ -100,6 +109,9 @@ public class RagTraceQueryServiceImpl implements RagTraceQueryService {
         return nodes.stream().map(this::toNodeVO).toList();
     }
 
+    /**
+     * 将 Trace 运行实体转换为展示对象。
+     */
     private RagTraceRunVO toRunVO(RagTraceRunDO run, Map<String, String> usernameMap) {
         String username = resolveUsername(run.getUserId(), usernameMap);
         return RagTraceRunVO.builder()
@@ -118,6 +130,9 @@ public class RagTraceQueryServiceImpl implements RagTraceQueryService {
                 .build();
     }
 
+    /**
+     * 批量加载当前结果集中涉及到的用户名映射。
+     */
     private Map<String, String> loadUsernameMap(List<RagTraceRunDO> runs) {
         if (runs == null || runs.isEmpty()) {
             return Collections.emptyMap();
@@ -145,6 +160,9 @@ public class RagTraceQueryServiceImpl implements RagTraceQueryService {
         ));
     }
 
+    /**
+     * 从用户名映射表中解析指定用户名称。
+     */
     private String resolveUsername(String userId, Map<String, String> usernameMap) {
         if (StrUtil.isBlank(userId) || usernameMap == null || usernameMap.isEmpty()) {
             return null;
@@ -152,6 +170,9 @@ public class RagTraceQueryServiceImpl implements RagTraceQueryService {
         return usernameMap.get(userId);
     }
 
+    /**
+     * 将 Trace 节点实体转换为展示对象。
+     */
     private RagTraceNodeVO toNodeVO(RagTraceNodeDO node) {
         return RagTraceNodeVO.builder()
                 .traceId(node.getTraceId())
